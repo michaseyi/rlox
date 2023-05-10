@@ -1,0 +1,12 @@
+var name = "Michael"
+
+
+for (var i = 0; i < 10; i++) {
+   if (i > 2) {
+      print "I am coming home"
+   } else if (i > 4) {
+      print "I am coming home soon"
+   } else {
+      print "I am not coming home"
+   }
+}

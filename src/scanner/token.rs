@@ -1,7 +1,8 @@
 use std::fmt;
+use std::marker::Copy;
 use strum_macros::Display;
 
-#[derive(Display, Debug)]
+#[derive(Display, Debug, Copy, Clone)]
 pub enum TokenType {
     // Singer-character tokens
     LeftParen,
