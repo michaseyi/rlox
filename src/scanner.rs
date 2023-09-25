@@ -129,6 +129,8 @@ impl Scanner {
                         while self.peek() != '\n' && !self.is_at_end() {
                             self.advance();
                         }
+                    } else if self.match_token('*') {
+                        self.block_quote();
                     } else {
                         self.add_token(TokenType::Slash, None);
                     }
@@ -144,13 +146,33 @@ impl Scanner {
                     } else if c.is_alphabetic() || c == '_' {
                         self.identifier();
                     } else {
-                        unsafe {
-                            GLOBAL_LOX.error(self.line, "Unexpected character.");
-                        }
+                        self.make_error(self.line, "Unexpected character.");
                     }
                 }
             }
         }
+    }
+    fn make_error(&self, line: usize, message: &str) {
+        unsafe {
+            GLOBAL_LOX.error(line, message);
+        }
+    }
+
+    fn block_quote(&mut self) {
+        while self.is_not_at_end() && !(self.peek() == '*' && self.peek_next() == '/') {
+            self.advance();
+        }
+
+        if self.is_at_end() {
+            self.make_error(self.line, "Unterminated block quote");
+        }
+
+        self.advance();
+        self.advance();
+    }
+
+    fn is_not_at_end(&self) -> bool {
+        return !self.is_at_end();
     }
 
     fn identifier(&mut self) {
@@ -212,10 +234,8 @@ impl Scanner {
         }
 
         if self.is_at_end() {
-            unsafe {
-                GLOBAL_LOX.error(self.line, "Unterminated string.");
-                return;
-            }
+            self.make_error(self.line, "Unterminated string.");
+            return;
         }
 
         self.advance();
@@ -233,6 +253,16 @@ impl Scanner {
         }
         char::from(self.source[self.current])
     }
+
+    /// Tries to match the expected character to the current character. It returns false if alread at the end of the source code.
+    ///
+    /// # Arguments
+    ///
+    /// * `expected` - The character to be matched
+    ///
+    /// # Returns
+    ///
+    /// true if `expected` matches the current character else false.
     fn match_token(&mut self, expected: char) -> bool {
         if self.is_at_end() {
             return false;
@@ -244,6 +274,12 @@ impl Scanner {
         self.current += 1;
         return true;
     }
+
+    /// Advances the current character to the next and returns it.
+    /// 
+    /// ### Returns
+    /// 
+    /// The new current character wrapped in Some or None if alread at end.
     fn advance(&mut self) -> Option<char> {
         let i = self.source.get(self.current)?;
         self.current += 1;

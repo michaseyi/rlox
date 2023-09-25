@@ -3,6 +3,7 @@ use std::fs;
 use std::io::{stdin, stdout, Write};
 use std::process;
 pub mod scanner;
+pub mod expression;
 
 static mut GLOBAL_LOX: Lox = Lox::new();
 
@@ -20,6 +21,10 @@ impl Lox {
     }
 
     pub fn get_instance() -> &'static mut Self {
+
+        expression::create();
+
+
         unsafe { &mut GLOBAL_LOX }
     }
 
